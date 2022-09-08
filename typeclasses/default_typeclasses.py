@@ -80,7 +80,7 @@ just overloads its hooks to have it perform its function.
 """
 
 from evennia import DefaultAccount, DefaultChannel, DefaultCharacter, DefaultExit, DefaultGuest, DefaultObject, DefaultRoom, DefaultScript
-
+from features.searchlock import SearchLockMixin
 
 class Account(DefaultAccount):
     """
@@ -199,7 +199,7 @@ class Channel(DefaultChannel):
     pass
 
 
-class Character(DefaultCharacter):
+class Character(SearchLockMixin, DefaultCharacter): 
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:

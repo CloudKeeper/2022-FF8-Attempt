@@ -1,5 +1,37 @@
 """
-This is a Character typeclass 
+
+USE:
+-To be truley invisible, objects should be:
+    obj.locks.add("search:false()")
+    obj.locks.add("view:false()")
+
+Vanilla Evennia does not allow true hidden objects by default.
+
+The 'view' lock will prevent the object being displayed in a room's description
+and stop the look command with "Could not view 'object(#9)'", where as
+attempting to look at a non-existant object returns 'Could not find '<object>''.
+
+Likewise, the 'get' lock will disallow getting with "Could not get 'object(#9)'" 
+instead of 'Could not find '<object>''.
+
+Both of which give away the existance of a hidden object.
+
+This is a Mixin typeclass to implement the Search() method to respect a lock
+'search'. Where search = false, then the search command will ignore it, achieveing
+what the 'view' and 'get' locks do not.
+
+Because the get command uses search, search=false objects will not be gettable
+BUT because rooms use self.contents rather than search, they will still display
+search = false objects unless the 'lock' is also false.
+
+I can see times when a visible object should not be subject to search and so 
+they should be separate locks. However, something that is not searchable will
+ordinarily not be visible.
+
+TODO:
+-Consider making a room typeclass that adds "and con.access(looker, "search")" to:
+        visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
+in the room typeclass return_appearance method.
 """
 
 from django.conf import settings
@@ -9,7 +41,7 @@ from evennia.utils.utils import make_iter, variable_from_module
 
 _AT_SEARCH_RESULT = variable_from_module(*settings.SEARCH_AT_RESULT.rsplit(".", 1))
 
-class SearchLockCharacter(DefaultCharacter):
+class SearchLockMixin():
     def search(
         self,
         searchdata,
