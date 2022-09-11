@@ -12,7 +12,7 @@ and stop the look command with "Could not view 'object(#9)'", where as
 attempting to look at a non-existant object returns 'Could not find '<object>''.
 
 Likewise, the 'get' lock will disallow getting with "Could not get 'object(#9)'" 
-instead of 'Could not find '<object>''.
+instead of "Could not find '<object>'".
 
 Both of which give away the existance of a hidden object.
 
