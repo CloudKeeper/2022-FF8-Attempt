@@ -261,7 +261,7 @@ class Guest(DefaultGuest):
     pass
 
 
-class Object(DefaultObject):
+class Object(SearchLockMixin, DefaultObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be
@@ -410,7 +410,7 @@ class Object(DefaultObject):
     pass
 
 
-class Room(DefaultRoom):
+class Room(SearchLockMixin, DefaultRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to

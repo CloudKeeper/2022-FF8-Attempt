@@ -7,3 +7,7 @@ plugging functionality into. All the action happens in the features folder.
 complete the tutorial and stop people having the same name and password.
 
 05/09 - Completed the first pass of Triple Triad
+
+11/09 - Completed SearchLock for true invisible objects.
+
+12/09 - Tested and plugged in Delayed Exits

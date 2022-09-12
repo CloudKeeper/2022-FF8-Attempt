@@ -1,9 +1,7 @@
 """
-
 USE:
--To be truley invisible, objects should be:
+objects should be:
     obj.locks.add("search:false()")
-    obj.locks.add("view:false()")
 
 Vanilla Evennia does not allow true hidden objects by default.
 
@@ -27,17 +25,13 @@ search = false objects unless the 'lock' is also false.
 I can see times when a visible object should not be subject to search and so 
 they should be separate locks. However, something that is not searchable will
 ordinarily not be visible.
-
-TODO:
--Consider making a room typeclass that adds "and con.access(looker, "search")" to:
-        visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
-in the room typeclass return_appearance method.
 """
 
 from django.conf import settings
+from collections import defaultdict
 from evennia import DefaultCharacter
 from evennia.objects.models import ObjectDB
-from evennia.utils.utils import make_iter, variable_from_module
+from evennia.utils.utils import make_iter, variable_from_module, list_to_string
 
 _AT_SEARCH_RESULT = variable_from_module(*settings.SEARCH_AT_RESULT.rsplit(".", 1))
 
@@ -206,3 +200,50 @@ class SearchLockMixin():
             nofound_string=nofound_string,
             multimatch_string=multimatch_string,
         )
+
+    def return_appearance(self, looker, **kwargs):
+        """
+        This formats a description. It is the hook a 'look' command
+        should call.
+        Args:
+            looker (Object): Object doing the looking.
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+        """
+        if not looker:
+            return ""
+        # get and identify all objects
+        visible = (con for con in self.contents if con != looker and con.access(looker, "view")) # and con.access(looker, "search")
+        exits, users, things = [], [], defaultdict(list)
+        for con in visible:
+            key = con.get_display_name(looker)
+            if con.destination:
+                exits.append(key)
+            elif con.has_account:
+                users.append("|c%s|n" % key)
+            else:
+                # things can be pluralized
+                things[key].append(con)
+        # get description, build string
+        string = "|c%s|n\n" % self.get_display_name(looker)
+        desc = self.db.desc
+        if desc:
+            string += "%s" % desc
+        if exits:
+            string += "\n|wExits:|n " + list_to_string(exits)
+        if users or things:
+            # handle pluralization of things (never pluralize users)
+            thing_strings = []
+            for key, itemlist in sorted(things.items()):
+                nitem = len(itemlist)
+                if nitem == 1:
+                    key, _ = itemlist[0].get_numbered_name(nitem, looker, key=key)
+                else:
+                    key = [item.get_numbered_name(nitem, looker, key=key)[1] for item in itemlist][
+                        0
+                    ]
+                thing_strings.append(key)
+
+            string += "\n|wYou see:|n " + list_to_string(users + thing_strings)
+
+        return string
